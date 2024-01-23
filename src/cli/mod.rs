@@ -1,6 +1,5 @@
 
-use crate::io::read;
-use crate::format::*;
+use crate::utils::*;
 
 pub struct Cli {
 }
@@ -23,20 +22,14 @@ impl Cli {
         let mut text: String;
 
         for task in day_tasks.get_tasks() {
+            text = format!(
+                "{:<task_width$} | {:<10} | {:<10}",
+                task.get_name(),
+                task.get_priority(),
+                task.get_due_date(),
+            );
             if *task.get_done() {
-                text = color(strike(
-                    format!("{:<task_width$} | {:<10} | {:<10}",
-                        task.get_name(),
-                        task.get_priority(),
-                        task.get_due_date(),
-                    )
-                ), 32);
-            } else {
-                text = format!("{:<task_width$} | {:<10} | {:<10}",
-                    task.get_name(),
-                    task.get_priority(),
-                    task.get_due_date(),
-                );
+                text = green_strike(text.clone());
             }
             println!("{}", text);
         }
