@@ -1,11 +1,9 @@
 // use clap::{App, Arg};
-mod io;
-mod format;
 mod cli;
-mod task;
+mod utils;
 
 use cli::Cli;
-
+use utils::*;
 
 fn main() {
     let path = "/home/bat/ws/rust_ws/todo/lists/20240121.csv";
