@@ -11,7 +11,7 @@ pub fn read(file_path: &str) -> Result<TodoList, csv::Error> {
 
     for result in rdr.records() {
         let record = result?;
-        let task = TodoTask::new(record);
+        let task = TodoTask::new_from_csv(record);
         tasks.push(task);
     }
 
