@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.32"
-clap = "2.33"
+clap = { version = "4.0", features = ["derive"] }
 crossterm = "0.27.0"
 csv = "1.1"

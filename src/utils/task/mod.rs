@@ -1,7 +1,5 @@
-mod todo_list;
-mod todo_task;
-mod priority;
+mod task;
+mod task_list;
 
-pub use todo_list::TodoList;
-pub use todo_task::TodoTask;
-pub use priority::Priority;
+pub use task::Task;
+pub use task_list::TaskList;
