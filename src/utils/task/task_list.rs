@@ -64,23 +64,7 @@ impl TaskList {
     }
 
     pub fn list_tasks(&self) {
-        // Find the maximum width for each column
-        let max_name_width = self.max_name_width();
-
-        let mut text: String;
-
-        for task in self.get_tasks() {
-            text = format!(
-                "{:<max_name_width$} | {:<10} | {:<10}",
-                task.get_name(),
-                task.get_priority().to_string(),
-                task.get_deadline(),
-            );
-            if *task.get_done() {
-                text = green_strike(text.clone());
-            }
-            println!("{}", text);
-        }
+        display_once(self);
     }
 
     pub fn sort_tasks(&mut self) {
@@ -102,7 +86,7 @@ impl TaskList {
         &mut self.tasks
     }
 
-    fn max_name_width(&self) -> usize {
+    pub fn max_name_width(&self) -> usize {
         let mut max_name_width = self.get_tasks()
             .iter()
             .map(|s| s.len())
