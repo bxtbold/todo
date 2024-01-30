@@ -1,3 +1,5 @@
+use std::error::Error;
+
 #[derive(Debug)]
 pub struct Task {
     done: bool,
@@ -18,17 +20,19 @@ impl Task {
         }
     }
 
-    pub fn new_from_csv(record: csv::StringRecord) -> Task {
-        let done = record.get(0).unwrap().parse::<bool>().unwrap();
-        let name = record.get(1).unwrap().to_string();
-        let priority = record.get(2).unwrap().to_string();
-        let deadline = record.get(3).unwrap().to_string();
-        Task {
+    pub fn new_from_csv(record: csv::StringRecord) -> Result<Task, Box<dyn Error>> {
+        let done = record.get(0).expect("").parse::<bool>()?;
+        let name = record.get(1).expect("").to_string();
+        let priority = record.get(2).expect("").to_string();
+        let deadline = record.get(3).expect("").to_string();
+        Ok(
+            Task {
             done,
             name,
             priority,
             deadline,
-        }
+            }
+        )
     }
 
     pub fn csv_format(&self) -> String {
