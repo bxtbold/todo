@@ -1,3 +1,4 @@
+use std::error::Error;
 use crate::utils::*;
 
 #[derive(Debug)]
@@ -22,8 +23,11 @@ impl TaskList {
         }
     }
 
-    pub fn load_tasks_from_csv(file_path: &str) -> TaskList {
-        read(file_path).expect("Failed to read file")
+    pub fn load_tasks_from_csv(file_path: &str) -> Result<TaskList, Box<dyn Error>> {
+        match read(file_path) {
+            Ok(task_list) => Ok(task_list),
+            Err(e) => Err(Box::new(e)),
+        }
     }
 
     pub fn save_tasks_to_csv(&self, file_path: &str) {

@@ -4,8 +4,6 @@ use crate::utils::*;
 
 /// A struct representing the command line interface
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-#[command(name = "todo")]
 pub struct Cli {
     command: String,
     task_name: String,
@@ -17,7 +15,13 @@ pub struct Cli {
 impl Cli {
 
     pub fn execute(&self, file_path: &str) -> Result<TaskList, &str> {
-        let mut task_list = TaskList::load_tasks_from_csv(file_path);
+
+        let mut task_list = match TaskList::load_tasks_from_csv(file_path) {
+            Ok(task_list) => task_list,
+            Err(e) => {
+                return Err("Failed to load tasks from file");
+            }
+        };
 
         match self.command.as_str() {
             "add" => task_list.add_task(&self.task_name, &self.priority, &self.deadline),
@@ -25,6 +29,7 @@ impl Cli {
             "done" => task_list.complete_task(&self.task_name),
             "list" => task_list.list_tasks(),
             "sort" => task_list.sort_tasks(),
+            "gui" => display_loop(file_path),
             _ => return Err("Invalid command"),
         }
 
@@ -46,6 +51,7 @@ impl Cli {
             .subcommand(Cli::done_command())
             .subcommand(Cli::list_command())
             .subcommand(Cli::sort_command())
+            .subcommand(Cli::gui_command())
             .get_matches();
 
         Cli::match_subcommands(matches)
@@ -117,6 +123,12 @@ impl Cli {
         .override_usage("todo sort")
     }
 
+    fn gui_command() -> Command {
+        Command::new("gui")
+        .about("A graphical user interface on the terminal")
+        .override_usage("todo gui")
+    }
+
     fn match_subcommands<'a>(matches: ArgMatches) -> Result<Cli, &'a str> {
         let mut command: String = String::from("");
         let mut task_name: String = String::from("");
@@ -143,6 +155,9 @@ impl Cli {
             },
             Some(("sort", sub_matches)) => {
                 command = "sort".to_string();
+            },
+            Some(("gui", sub_matches)) => {
+                command = "gui".to_string();
             },
             _ => {
                 return Err("Invalid command");
