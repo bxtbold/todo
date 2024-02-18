@@ -29,7 +29,9 @@ impl Cli {
             "done" => task_list.complete_task(&self.task_name),
             "list" => task_list.list_tasks(),
             "sort" => task_list.sort_tasks(),
-            "gui" => display_loop(file_path),
+            "gui" => {
+                let _ = display_gui(file_path);
+            },
             _ => return Err("Invalid command"),
         }
 
