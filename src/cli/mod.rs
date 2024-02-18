@@ -42,7 +42,33 @@ impl Cli {
 
     pub fn parse<'a>() -> Result<Cli, &'a str> {
 
-        let matches = Command::new("todo")
+        let matches = Cli::base_command()
+            .subcommand(Cli::list_command())
+            .subcommand(Cli::gui_command())
+            .get_matches();
+
+        return Cli::match_subcommands(matches);
+    }
+
+    pub fn parse_gui<'a>(match_vec: Vec<&str>) -> Result<Cli, &'a str> {
+
+        let result_matches = Cli::base_command()
+            .try_get_matches_from(match_vec);
+
+        let matches = match result_matches {
+            Ok(matches) => {
+                return Cli::match_subcommands(matches);
+            },
+            Err(_) => {
+                return Err("Invalid command");
+            }
+        };
+    }
+
+
+    pub fn base_command<'a>() -> Command {
+
+        Command::new("todo")
             .about("Todo List Manager")
             .version("0.0.1")
             .author("Batbold N.")
@@ -51,12 +77,7 @@ impl Cli {
             .subcommand(Cli::add_command())
             .subcommand(Cli::rm_command())
             .subcommand(Cli::done_command())
-            .subcommand(Cli::list_command())
             .subcommand(Cli::sort_command())
-            .subcommand(Cli::gui_command())
-            .get_matches();
-
-        Cli::match_subcommands(matches)
     }
 
     fn add_command() -> Command {

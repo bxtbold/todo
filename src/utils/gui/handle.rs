@@ -4,6 +4,8 @@ use crossterm::{
 };
 use std::{fs, io::{self, Write}, time::Duration};
 use crate::{is_file_modified, utils::gui::display::*};
+use crate::cli::Cli;
+use crate::utils::red;
 
 
 pub fn handle_event(prev_size: &mut (u16, u16), event: Event, file_path: &str) -> Result<(), io::Error> {
@@ -37,7 +39,25 @@ pub fn handle_command_mode(prev_size: &mut (u16, u16), file_path: &str) -> Resul
                             break;
                         }
                         KeyCode::Enter => {
+                            let matches = input_buffer.split_whitespace().collect::<Vec<&str>>().clone();
+                            let cli = Cli::parse_gui(matches);
                             input_buffer.clear();
+                            match cli {
+                                Ok(cli) => {
+                                    let execute_result = cli.execute(file_path);
+                                    match execute_result {
+                                        Ok(_) => {
+                                            update_command_screen("task", &input_buffer, file_path);
+                                        },
+                                        Err(e) => {
+                                            break;
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    break;
+                                }
+                            }
                             write!(stdout, "{}", Clear(ClearType::UntilNewLine))?;
                         }
                         KeyCode::Char(c) => {
