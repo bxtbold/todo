@@ -3,7 +3,6 @@
 mod cli;
 mod utils;
 
-use clap::Parser;
 use cli::Cli;
 use utils::*;
 

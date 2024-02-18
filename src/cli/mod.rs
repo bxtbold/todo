@@ -1,4 +1,4 @@
-use clap::{builder::TypedValueParser, Arg, ArgMatches, Command, Parser};
+use clap::{Arg, ArgMatches, Command, Parser};
 use crate::utils::*;
 
 
@@ -18,7 +18,7 @@ impl Cli {
 
         let mut task_list = match TaskList::load_tasks_from_csv(file_path) {
             Ok(task_list) => task_list,
-            Err(e) => {
+            Err(_) => {
                 return Err("Failed to load tasks from file");
             }
         };
