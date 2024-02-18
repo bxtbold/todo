@@ -1,6 +1,8 @@
 #!/bin/bash
 
 todo() {
+    current_dir=$(pwd)
+
     script_path=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
     cd $script_path/..
 
@@ -16,6 +18,8 @@ todo() {
         cargo build --release
         "$binary_release_path" "$@"
     fi
+
+    cd $current_dir
 }
 
 _todo_completion() {
