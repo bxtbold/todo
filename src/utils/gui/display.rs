@@ -54,6 +54,8 @@ pub fn display_tasks(task_list: &TaskList) -> Result<(), ()>{
 
         print_line(text, (i + 2) as u16);
     }
+    println!("");
+
     Ok(())
 }
 

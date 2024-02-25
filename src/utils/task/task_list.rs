@@ -32,8 +32,9 @@ impl TaskList {
         }
     }
 
-    pub fn save_tasks_to_csv(&self, file_path: &str) {
-        write(file_path, self).expect("Failed to write file");
+    pub fn save_tasks_to_csv(&self, file_path: &str) -> Result<(), Box<dyn Error>> {
+        write(file_path, self)?;
+        Ok(())
     }
 
     pub fn add_task(&mut self, task_name: &str, priority: &str, deadline: &str) {
@@ -70,7 +71,7 @@ impl TaskList {
     }
 
     pub fn list_tasks(&self) {
-        display_once(self);
+        display_tasks(self);
     }
 
     pub fn sort_tasks(&mut self) {

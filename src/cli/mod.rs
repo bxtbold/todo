@@ -35,7 +35,12 @@ impl Cli {
             _ => return Err("Invalid command"),
         }
 
-        task_list.save_tasks_to_csv(file_path);
+        match task_list.save_tasks_to_csv(file_path) {
+            Ok(task_list) => {},
+            Err(_) => {
+                return Err("Failed to save tasks to the file!");
+            }
+        }
 
         Ok(task_list)
     }
