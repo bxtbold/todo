@@ -60,3 +60,28 @@ pub fn write(file_path: &str, task_list: &TaskList) -> Result<(), Box<dyn Error>
 }
 
 
+pub fn check_today_file(file_path: &str) {
+    if !file_exists(&file_path) {
+        create_file(&file_path);
+    }
+}
+
+
+pub fn get_today_date() -> String {
+    let now = chrono::Local::now();
+    now.format("%Y%m%d").to_string()
+}
+
+
+pub fn file_exists(file_path: &str) -> bool {
+    std::path::Path::new(file_path).exists()
+}
+
+
+pub fn create_file(file_path: &str) {
+    let file = std::fs::File::create(file_path)
+        .expect("Failed to create file");
+    write(file_path, &TaskList::new(get_today_date(), Vec::new()))
+        .expect("Failed to write to file");
+    println!("File created: {}", file_path);
+}
