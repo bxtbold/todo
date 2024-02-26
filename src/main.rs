@@ -9,9 +9,9 @@ use utils::*;
 
 fn main() {
     // file path is set to the default path if the environment variable is not set
-    let default_file_path = format!("/home/{}/todo_history/{}.csv", whoami::username(), get_today_date());
-    let file_path = std::env::var("TODO_HISTORY_PATH")
-        .unwrap_or(default_file_path);
+    let default_path = format!("/home/{}/todo_history", whoami::username());
+    let path = std::env::var("TODO_HISTORY_PATH").unwrap_or(default_path);
+    let file_path = format!("{}/{}.csv", path, get_today_date());
 
     // check if the file exists, if not create it
     check_today_file(&file_path);
