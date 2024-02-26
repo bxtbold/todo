@@ -1,5 +1,12 @@
 #!/bin/bash
 
+create_todo_history() {
+    if [ ! -x "$TODO_HISTORY_PATH" ]; then
+        mkdir $TODO_HISTORY_PATH
+    fi
+}
+
+
 todo() {
     current_dir=$(pwd)
 
@@ -40,4 +47,7 @@ _todo_completion() {
     fi
 }
 
+
+export TODO_HISTORY_PATH="$HOME/todo_history"
+create_todo_history
 complete -F _todo_completion todo
