@@ -10,4 +10,3 @@ chrono = "0.4.32"
 clap = { version = "4.0", features = ["derive"] }
 crossterm = "0.27.0"
 csv = "1.1"
-whoami = "1.4.1"

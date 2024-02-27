@@ -9,7 +9,7 @@ use utils::*;
 
 fn main() {
     // file path is set to the default path if the environment variable is not set
-    let default_path = format!("/home/{}/todo_history", whoami::username());
+    let default_path = format!("/{}/todo_history", std::env::var("HOME").unwrap());
     let path = std::env::var("TODO_HISTORY_PATH").unwrap_or(default_path);
     let file_path = format!("{}/{}.csv", path, get_today_date());
 
