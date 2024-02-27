@@ -13,13 +13,14 @@ Whether you're a Vim user seeking a familiar environment or someone in search of
 To build todo from the source, follow these steps:
 
 ```bash
+rustup update
 git clone https://github.com/bxtbold/todo.git
 cd todo
 cargo build --release
-echo "source $PWD/scripts/todo.sh" >> ~/.bashrc
+echo "source $PWD/scripts/todo.sh" >> ~/.bashrc   # replace .bashrc with .zshrc if your machine uses zshell
 ```
 
-This will clone the repository, build the todo tool, and enable the tab-completion for easy usage.
+This will update rust, clone the repository, build the todo tool, and enable the tab-completion.
 
 ## Usage
 
