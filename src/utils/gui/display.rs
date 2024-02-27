@@ -117,6 +117,8 @@ pub fn update_screen(content: &str, file_path: &str) -> Result<(), io::Error> {
             let task_list = TaskList::load_tasks_from_csv(file_path)
                 .expect("Failed to load tasks from file");
             display_tasks(&task_list);
+            task_list.save_tasks_to_csv(file_path)
+                .expect("Failed to save tasks to the file");
         },
         _ => {}
     }

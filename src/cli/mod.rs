@@ -14,7 +14,7 @@ pub struct Cli {
 
 impl Cli {
 
-    pub fn execute(&self, file_path: &str) -> Result<TaskList, &str> {
+    pub fn execute(&self, file_path: &str) -> Result<(), &str> {
 
         let mut task_list = match TaskList::load_tasks_from_csv(file_path) {
             Ok(task_list) => task_list,
@@ -31,18 +31,19 @@ impl Cli {
             "sort" => task_list.sort_tasks(),
             "gui" => {
                 let _ = display_gui(file_path);
+                return Ok(());
             },
             _ => return Err("Invalid command"),
         }
 
         match task_list.save_tasks_to_csv(file_path) {
-            Ok(task_list) => {},
+            Ok(_) => {
+                return Ok(());
+            },
             Err(_) => {
                 return Err("Failed to save tasks to the file!");
             }
         }
-
-        Ok(task_list)
     }
 
     pub fn parse<'a>() -> Result<Cli, &'a str> {
