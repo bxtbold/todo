@@ -1,15 +1,17 @@
-mod handle;
 mod display;
+mod environment;
+mod handle;
 
-use std::io;
+use std::{fs, io};
 use crossterm::{
     event, execute,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::time::Duration;
 
-pub use handle::*;
 pub use display::*;
+pub use environment::*;
+pub use handle::*;
 
 
 pub fn display_gui(file_path: &str) -> Result<(), io::Error> {
@@ -27,12 +29,13 @@ pub fn display_gui(file_path: &str) -> Result<(), io::Error> {
 
 fn gui_loop(file_path: &str)-> Result<(), io::Error> {
     loop {
-        let mut prev_size = terminal::size()?;
+        let mut env = Environment::new(file_path);
+
         update_view_screen("task", file_path)?;
 
         if let Ok(true) = event::poll(Duration::from_millis(100)) {
             if let Ok(event) = event::read() {
-                if let Err(_) = handle_event(&mut prev_size, event, file_path) {
+                if let Err(_) = handle_event(&mut env, event) {
                     break;
                 }
             }

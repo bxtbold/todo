@@ -2,17 +2,21 @@ use crossterm::{
     cursor, event::{self, Event, KeyCode, KeyEvent},
     terminal::{self, Clear, ClearType},
 };
-use std::{fs, io::{self, Write}, time::Duration};
-use crate::{is_file_modified, utils::gui::display::*};
-use crate::cli::Cli;
-use crate::utils::red;
+use std::{
+    fs,
+    io::{self, Write},
+    time::Duration,
+};
+use crate::{
+    cli::Cli, utils::gui::{display::*, environment::*}
+};
 
 
-pub fn handle_event(prev_size: &mut (u16, u16), event: Event, file_path: &str) -> Result<(), io::Error> {
+pub fn handle_event(env: &mut Environment, event: Event) -> Result<(), io::Error> {
     match event {
         Event::Key(KeyEvent { code, .. }) => {
             match code {
-                KeyCode::Char('I') | KeyCode::Char('i') => handle_command_mode(prev_size, file_path)?,
+                KeyCode::Char('I') | KeyCode::Char('i') => handle_command_mode(env)?,
                 KeyCode::Esc => {
                     return Err(io::Error::new(io::ErrorKind::Other, "Esc pressed"));
                 }
@@ -25,76 +29,89 @@ pub fn handle_event(prev_size: &mut (u16, u16), event: Event, file_path: &str) -
 }
 
 
-pub fn handle_command_mode(prev_size: &mut (u16, u16), file_path: &str) -> Result<(), io::Error> {
-    let mut stdout = io::stdout();
+pub fn handle_command_mode(env: &mut Environment) -> Result<(), io::Error> {
     let mut input_buffer = String::new();
 
-    update_command_screen("task", &input_buffer, file_path)?;
+    let file_path = env.get_file_path().to_owned(); // immutable borrow here
+    update_command_screen("task", &input_buffer, &file_path)?; // immutable borrow ends here
+
     loop {
         if let Ok(true) = event::poll(Duration::from_millis(100)) {
             if let Ok(event) = event::read() {
-                if let Event::Key(KeyEvent { code, .. }) = event {
-                    match code {
-                        KeyCode::Esc => {
-                            break;
+                match event {
+                    Event::Key(KeyEvent { code, .. }) => {
+                        match code {
+                            KeyCode::Esc => break,
+                            KeyCode::Enter => handle_enter_key(&mut input_buffer, &file_path)?,
+                            KeyCode::Char(c) => input_buffer.push(c),
+                            KeyCode::Backspace => { input_buffer.pop(); }
+                            _ => {}
                         }
-                        KeyCode::Enter => {
-                            let matches = input_buffer.split_whitespace().collect::<Vec<&str>>().clone();
-                            let cli = Cli::parse_gui(matches);
-                            input_buffer.clear();
-                            match cli {
-                                Ok(cli) => {
-                                    let execute_result = cli.execute(file_path);
-                                    match execute_result {
-                                        Ok(_) => {
-                                            update_command_screen("task", &input_buffer, file_path);
-                                        },
-                                        Err(e) => {
-                                            break;
-                                        }
-                                    }
-                                }
-                                Err(e) => {
-                                    break;
-                                }
-                            }
-                            write!(stdout, "{}", Clear(ClearType::UntilNewLine))?;
-                        }
-                        KeyCode::Char(c) => {
-                            input_buffer.push(c);
-                        }
-                        KeyCode::Backspace => {
-                            input_buffer.pop();
-                        }
-                        _ => {}
-                    }
 
-                    write!(
-                        stdout,
-                        "{}{}:{}",
-                        cursor::MoveTo(0, terminal::size()?.1 - 1),
-                        Clear(ClearType::CurrentLine),
-                        input_buffer
-                    )?;
-                    stdout.flush()?;
+                        print_line(format!(":{}", input_buffer), terminal::size()?.1 - 1)?;                    }
+                    _ => {}
                 }
             }
         }
 
-
-        let initial_metadata = fs::metadata(&file_path)
-        .expect("Failed to get file metadata");
-        let mut last_modified: std::time::SystemTime = initial_metadata.modified()
-            .expect("Failed to get modification time");
-
-        let current_size = terminal::size()?;
-        if current_size != *prev_size || is_file_modified(file_path, &mut last_modified) {
+        if env.should_update_view() {
+            let file_path = env.get_file_path();
             update_command_screen("task", &input_buffer, file_path)?;
-            *prev_size = current_size;
         }
 
-        std::thread::sleep(Duration::from_millis(50));
+        std::thread::sleep(Duration::from_millis(10));
     }
 
+    Ok(())
+}
+
+
+fn update_and_handle_input(env: &mut Environment, input_buffer: &mut String) -> Result<(), io::Error> {
+
+    let file_path = env.get_file_path().to_owned(); // immutable borrow here
+    update_command_screen("task", input_buffer, &file_path)?; // immutable borrow ends here
+
+    loop {
+        if let Ok(true) = event::poll(Duration::from_millis(100)) {
+            if let Ok(event) = event::read() {
+                match event {
+                    Event::Key(KeyEvent { code, .. }) => {
+                        match code {
+                            KeyCode::Esc => break,
+                            KeyCode::Enter => handle_enter_key(input_buffer, &file_path)?,
+                            KeyCode::Char(c) => input_buffer.push(c),
+                            KeyCode::Backspace => { input_buffer.pop(); }
+                            _ => {}
+                        }
+
+                        print_line(format!(":{}", input_buffer), terminal::size()?.1 - 1)?;                    }
+                    _ => {}
+                }
+            }
+        }
+
+        if env.should_update_view() {
+            let file_path = env.get_file_path();
+            update_command_screen("task", input_buffer, file_path)?;
+            env.update_modified_time();
+            env.update_terminal_size();
+        }
+
+        std::thread::sleep(Duration::from_millis(10));
+    }
+
+    Ok(())
+}
+
+
+fn handle_enter_key(input_buffer: &mut String, file_path: &str) -> Result<(), io::Error> {
+    let matches: Vec<&str> = input_buffer.split_whitespace().collect();
+    let cli = Cli::parse_gui(matches.clone());
+    match cli {
+        Ok(cli) => {cli.execute(file_path);}
+        Err(e) => {}
+    }
+    input_buffer.clear();
+    clear_line()?;
     Ok(())
 }
