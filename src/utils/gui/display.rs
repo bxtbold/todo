@@ -15,6 +15,14 @@ pub fn clear_all() -> Result<(), io::Error> {
 }
 
 
+pub fn clear_line() -> Result<(), io::Error> {
+    let mut stdout = io::stdout();
+    write!(stdout, "{}", Clear(ClearType::UntilNewLine))?;
+    stdout.flush()?;
+    Ok(())
+}
+
+
 pub fn display_tasks_from_file(file_path: &str) -> Result<(), ()> {
 
     let task_list =  match TaskList::load_tasks_from_csv(file_path) {

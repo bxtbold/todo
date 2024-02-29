@@ -83,5 +83,4 @@ pub fn create_file(file_path: &str) {
         .expect("Failed to create file");
     write(file_path, &TaskList::new(get_today_date(), Vec::new()))
         .expect("Failed to write to file");
-    println!("File created: {}", file_path);
 }
