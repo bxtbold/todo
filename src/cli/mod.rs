@@ -88,56 +88,89 @@ impl Cli {
 
     fn add_command() -> Command {
         Command::new("add")
-        .about("Add a new task")
-        .override_usage("todo add [TASK_NAME] [OPTIONS]")
-        .arg(
-            Arg::new("task_name")
-            .required(true)
-            .value_parser(clap::value_parser!(String))
-            .help("The name of the task")
-        )
-        .arg(
-            Arg::new("priority")
-                .short('p')
-                .long("priority")
-                .required(false)
-                .value_parser(clap::value_parser!(String))
-                .default_value("high")
-                .help("The priority of the task. Options: high, medium, low")
-        )
-        .arg(
-            Arg::new("deadline")
-                .short('d')
-                .long("deadline")
-                .help("The deadline of the task. Format: YYYY-MM-DD")
-                .required(false)
-                .default_value("today")
-                .value_parser(clap::value_parser!(String))
-        )
+            .about("Add a new task")
+            .override_usage("todo add [TASK_NAME] [OPTIONS]")
+            .arg(
+                Arg::new("task_name")
+                    .index(1)
+                    .value_parser(clap::value_parser!(String))
+                    .conflicts_with("longer_name")
+                    .required_unless_present("longer_name")
+                    .help("The name of the task")
+            )
+            .arg(
+                Arg::new("longer_name")
+                    .short('n')
+                    .long("name")
+                    .value_parser(clap::value_parser!(String))
+                    .num_args(1..=10)
+                    .conflicts_with("task_name")
+                    .help("The name of the task")
+            )
+            .arg(
+                Arg::new("priority")
+                    .short('p')
+                    .long("priority")
+                    .required(false)
+                    .value_parser(clap::value_parser!(String))
+                    .default_value("high")
+                    .help("The priority of the task. Options: high, medium, low")
+            )
+            .arg(
+                Arg::new("deadline")
+                    .short('d')
+                    .long("deadline")
+                    .help("The deadline of the task. Format: YYYY-MM-DD")
+                    .required(false)
+                    .default_value("today")
+                    .value_parser(clap::value_parser!(String))
+            )
     }
 
     fn rm_command() -> Command {
         Command::new("rm")
-        .about("Remove a task")
-        .override_usage("todo rm [TASK_NAME]")
-        .arg(
-            Arg::new("task_name")
-            .required(true)
-            .value_parser(clap::value_parser!(String))
-            .help("The name of the task")
-        )
+            .about("Remove a task")
+            .override_usage("todo rm [TASK_NAME]")
+            .arg(
+                Arg::new("task_name")
+                    .index(1)
+                    .value_parser(clap::value_parser!(String))
+                    .conflicts_with("longer_name")
+                    .required_unless_present("longer_name")
+                    .help("The name of the task")
+            )
+            .arg(
+                Arg::new("longer_name")
+                    .short('n')
+                    .long("name")
+                    .value_parser(clap::value_parser!(String))
+                    .num_args(1..=10)
+                    .conflicts_with("task_name")
+                    .help("The name of the task")
+            )
     }
 
     fn done_command() -> Command {
         Command::new("done")
-        .about("Complete a task")
-        .override_usage("todo done [TASK_NAME]")
-        .arg(
-            Arg::new("task_name")
-            .required(true)
-            .value_parser(clap::value_parser!(String))
-            .help("The name of the task")
-        )
+            .about("Complete a task")
+            .override_usage("todo done [TASK_NAME]")
+            .arg(
+                Arg::new("task_name")
+                    .index(1)
+                    .value_parser(clap::value_parser!(String))
+                    .conflicts_with("longer_name")
+                    .required_unless_present("longer_name")
+                    .help("The name of the task")
+            )
+            .arg(
+                Arg::new("longer_name")
+                    .short('n')
+                    .long("name")
+                    .value_parser(clap::value_parser!(String))
+                    .num_args(1..=10)
+                    .conflicts_with("task_name")
+                    .help("The name of the task")
+            )
     }
 
     fn list_command() -> Command {
@@ -204,6 +237,15 @@ impl Cli {
     }
 
     fn parse_subcommand_name(matches: &ArgMatches, arg: &str) -> String {
+        // longer name
+        if arg == "task_name" {
+            let longer_task_name = Cli::parse_longer_name(matches);
+            if !longer_task_name.is_empty() {
+                return longer_task_name;
+            }
+        }
+
+        // shorter name
         matches
             .try_get_raw(arg)
             .expect("Could not read the value from the argument")
@@ -214,5 +256,13 @@ impl Cli {
             .to_str()
             .expect("Could not parse the value to &str")
             .to_string()
+    }
+
+    fn parse_longer_name(matches: &ArgMatches) -> String {
+        matches
+            .get_many::<String>("longer_name")
+            .unwrap_or_default().map(|v| v.as_str())
+            .collect::<Vec<_>>()
+            .join(" ")
     }
 }
