@@ -11,15 +11,15 @@ todo() {
     current_dir=$(pwd)
 
     script_path=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-    cd $script_path/..
 
+    cd "$script_path"/.. || exit
     local binary_debug_path="$(pwd)/target/debug/todo"
     local binary_release_path="$(pwd)/target/release/todo"
 
-    if [ -x "$binary_debug_path" ]; then
+    if [ -x "$binary_release_path" ]; then
+            "$binary_release_path" "$@"
+    elif [ -x "$binary_debug_path" ]; then
         "$binary_debug_path" "$@"
-    elif [ -x "$binary_release_path" ]; then
-        "$binary_release_path" "$@"
     else
         echo "Error: Binary not found. Building..."
         cargo build --release
