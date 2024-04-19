@@ -1,86 +1,80 @@
-use csv::WriterBuilder;
-use std::error::Error;
 use std::fs::{self, File};
-use std::time::SystemTime;
-use crate::utils::{Task, TaskList};
+
+mod file;
+pub use file::*;
 
 
-pub fn is_file_modified(file_path: &str, last_modified: &mut SystemTime) -> bool {
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::tempdir;
 
-    let current_metadata = fs::metadata(&file_path)
-        .expect("Failed to get file metadata");
-    let current_modified = current_metadata.modified()
-        .expect("Failed to get modification time");
+    #[test]
+    fn test_read_and_write_tasks() {
+        // create temporary directory
+        let tmp_dir = tempdir().expect("Failed to create temporary directory");
 
-    if *last_modified != current_modified {
-        *last_modified = current_modified;
-        return true;
-    }
-    false
-}
+        // create temporary CSV file path
+        let file_path_buf = tmp_dir.path().join("tasks.csv");
+        let file_path = file_path_buf.to_str().unwrap();
 
+        // write tasks to CSV file
+        let mut file: File = std::fs::File::create(&file_path).expect("Failed to create file");
+        write!(file, "is_completed,task_name,priority,deadline\ntrue,Buy groceries,high,2024-04-20\nfalse,Study,medium,2024-04-25").unwrap();
 
-pub fn read(file_path: &str) -> Result<TaskList, csv::Error> {
+        // read tasks from CSV file
+        let task_list = read(&file_path).expect("Failed to read tasks from file");
 
-    let mut tasks: Vec<Task> = Vec::new();
+        // verify tasks read correctly
+        assert_eq!(task_list.get_tasks().len(), 2);
+        assert_eq!(task_list.get_tasks()[0].get_name(), "Buy groceries");
+        assert_eq!(task_list.get_tasks()[1].get_name(), "Study");
 
-    let mut rdr = csv::Reader::from_path(file_path)?;
+        // write tasks back to CSV file
+        write(&file_path, &task_list).expect("Failed to write tasks to file");
 
-    for result in rdr.records() {
-        let record = result?;
-        let task = Task::new_from_csv(record);
-        match task {
-            Ok(task) => tasks.push(task),
-            Err(e) => println!("{}", e),
-        }
-    }
-
-    Ok(TaskList::new("20240121".to_string(), tasks))
-}
-
-
-pub fn write(file_path: &str, task_list: &TaskList) -> Result<(), Box<dyn Error>> {
-
-    let file = File::create(file_path)?;
-    let mut csv_writer = WriterBuilder::new().from_writer(file);
-    csv_writer.write_record(&["is_completed", "task_name", "priority", "deadline"])?;
-    for task in task_list.get_tasks() {
-        // Write each field separately, not as a single string
-        csv_writer.write_record(&[
-            &task.get_done().to_string(),
-            &task.get_name(),
-            &task.get_priority(),
-            &task.get_deadline(),
-        ])?;
+        // read tasks again to verify write operation
+        let updated_task_list = read(&file_path).expect("Failed to read tasks from file");
+        assert_eq!(updated_task_list.get_tasks().len(), 2);
+        assert_eq!(updated_task_list.get_tasks()[0].get_name(), "Buy groceries");
+        assert_eq!(updated_task_list.get_tasks()[1].get_name(), "Study");
     }
 
-    csv_writer.flush()?;
+    #[test]
+    fn test_check_today_file() {
+        let tmp_dir = tempdir().expect("Failed to create temporary directory");
+        let file_path_buf = tmp_dir.path().join("tasks.csv");
+        let file_path = file_path_buf.to_str().unwrap();
 
-    Ok(())
-}
+        // call check_today_file, which should create the file
+        check_today_file(&file_path);
 
-
-pub fn check_today_file(file_path: &str) {
-    if !file_exists(&file_path) {
-        create_file(&file_path);
+        // check that the file exists after calling check_today_file
+        assert!(file_exists(&file_path));
     }
-}
 
+    #[test]
+    fn test_get_today_date() {
+        let today_date = get_today_date();
+        // verify that the date format is correct (YYYYMMDD)
+        assert_eq!(today_date.len(), 8);
+    }
 
-pub fn get_today_date() -> String {
-    let now = chrono::Local::now();
-    now.format("%Y%m%d").to_string()
-}
+    #[test]
+    fn test_file_exists() {
+        // create temporary directory
+        let tmp_dir = tempdir().expect("Failed to create temporary directory");
+        let file_path = tmp_dir.path().join("test.txt");
 
+        // Ensure that file doesn't exist initially
+        let file_path_buf = tmp_dir.path().join("tasks.csv");
+        let file_path = file_path_buf.to_str().unwrap();
 
-pub fn file_exists(file_path: &str) -> bool {
-    std::path::Path::new(file_path).exists()
-}
+        // create file
+        let _file = fs::File::create(&file_path).expect("Failed to create file");
 
-
-pub fn create_file(file_path: &str) {
-    let file = std::fs::File::create(file_path)
-        .expect("Failed to create file");
-    write(file_path, &TaskList::new(get_today_date(), Vec::new()))
-        .expect("Failed to write to file");
+        // check that the file exists after creation
+        assert!(file_exists(&file_path));
+    }
 }

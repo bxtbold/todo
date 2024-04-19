@@ -266,3 +266,86 @@ impl Cli {
             .join(" ")
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+
+    use std::fs::{self, File};
+    use tempfile::tempdir;
+    use std::io::Write;
+    use super::*;
+
+    fn create_tmp_file() -> String {
+        let tmp_dir = tempdir().expect("Failed to create temporary directory");
+        let file_path_buf = tmp_dir.path().join("tasks.csv");
+        let file_path = file_path_buf.to_str().unwrap();
+
+        // write tasks to CSV file
+        let mut file = std::fs::File::create(&file_path).expect("Failed to create file");
+        write!(file, "is_completed,task_name,priority,deadline\n").unwrap();
+
+        file_path.to_string()
+    }
+
+    #[test]
+    fn test_execute_add_command() {
+        let tmp_file_path = create_tmp_file();
+
+        let cli = Cli {
+            command: "add".to_string(),
+            task_name: "Buy groceries".to_string(),
+            priority: "high".to_string(),
+            deadline: "2024-04-20".to_string(),
+        };
+
+        let result = cli.execute(&tmp_file_path);
+        assert!(result.is_ok());
+
+        let task_list = TaskList::load_tasks_from_csv(&tmp_file_path).expect("Failed to load tasks from file");
+        assert_eq!(task_list.get_tasks().len(), 1);
+        assert_eq!(task_list.get_tasks()[0].get_name(), "Buy groceries");
+    }
+
+    #[test]
+    fn test_execute_rm_command() {
+        let tmp_file_path = create_tmp_file();
+
+        let mut task_list = TaskList::new_empty("2024-04-19".to_string());
+        task_list.add_task("Buy groceries", "high", "2024-04-20");
+
+        let cli = Cli {
+            command: "rm".to_string(),
+            task_name: "Buy groceries".to_string(),
+            priority: "".to_string(),
+            deadline: "".to_string(),
+        };
+
+        let result = cli.execute(&tmp_file_path);
+        assert!(result.is_ok());
+
+        let task_list = TaskList::load_tasks_from_csv(&tmp_file_path).expect("Failed to load tasks from file");
+        assert_eq!(task_list.get_tasks().len(), 0);
+    }
+
+    #[test]
+    fn test_execute_list_command() {
+        let tmp_file_path = create_tmp_file();
+
+        let mut task_list = TaskList::new_empty("2024-04-19".to_string());
+        task_list.add_task("Buy groceries", "medium", "2024-04-20");
+        task_list.add_task("Study", "high", "2024-04-25");
+
+        let cli = Cli {
+            command: "list".to_string(),
+            task_name: "".to_string(),
+            priority: "".to_string(),
+            deadline: "".to_string(),
+        };
+
+        let result = cli.execute(&tmp_file_path);
+        assert!(result.is_ok());
+
+    }
+
+}
