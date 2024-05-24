@@ -81,6 +81,16 @@ impl TaskList {
             );
     }
 
+    pub fn get_task_name_with_id(&self, id: &usize) -> String {
+        let task_list = self.get_tasks();
+        match task_list.get(*id) {
+            Some(task) => {
+                return task.get_name().to_owned()
+            },
+            _ => return String::from("")
+        }
+    }
+
     pub fn get_date(&self) -> &String {
         &self.date
     }
