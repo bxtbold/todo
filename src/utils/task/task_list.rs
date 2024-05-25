@@ -7,14 +7,17 @@ use crate::utils::gui::*;
 pub struct TaskList {
     date: String,
     tasks: Vec<Task>,
+    env: Environment
 }
 
 
 impl TaskList {
-    pub fn new(date: String, tasks: Vec<Task>) -> TaskList {
+    pub fn new(date: String, tasks: Vec<Task>, file_path: String) -> TaskList {
+        let env = Environment::new(file_path);
         TaskList {
             date,
             tasks,
+            env,
         }
     }
 
@@ -22,6 +25,7 @@ impl TaskList {
         TaskList {
             date,
             tasks: Vec::new(),
+            env: Environment::new(String::new()),
         }
     }
 
@@ -32,7 +36,8 @@ impl TaskList {
         }
     }
 
-    pub fn save_tasks_to_csv(&self, file_path: &str) -> Result<(), Box<dyn Error>> {
+    pub fn save_tasks_to_csv(&self) -> Result<(), Box<dyn Error>> {
+        let file_path = self.get_env().get_file_path();
         write(file_path, self)?;
         Ok(())
     }
@@ -49,7 +54,7 @@ impl TaskList {
     }
 
     pub fn remove_task(&mut self, task_name: &str) {
-        let mut index = 0;
+        let mut index: usize = 0;
 
         for task in self.get_tasks_mut() {
             if task.get_name() == task_name {
@@ -101,6 +106,14 @@ impl TaskList {
 
     pub fn get_tasks_mut(&mut self) -> &mut Vec<Task> {
         &mut self.tasks
+    }
+
+    pub fn get_env(&self) -> &Environment {
+        &self.env
+    }
+
+    pub fn get_env_mut(&mut self) -> &mut Environment {
+        &mut self.env
     }
 
     pub fn max_name_width(&self) -> usize {

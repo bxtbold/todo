@@ -16,11 +16,15 @@ fn main() {
     // check if the file exists, if not create it
     check_today_file(&file_path);
 
+    let mut task_list = TaskList::load_tasks_from_csv(&file_path).unwrap();
     // parse the command line arguments and execute the command
     let cli = Cli::parse()
         .expect("Failed to parse command line arguments");
-    match cli.execute(&file_path) {
-       Ok(_) => (),
-       Err(e) => println!("{}", e),
+
+    match cli.execute(&mut task_list) {
+       Ok(_) => {
+            task_list.save_tasks_to_csv();
+        },
+       Err(e) => (println!("{}", e)),
     }
 }

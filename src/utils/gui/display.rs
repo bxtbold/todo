@@ -102,30 +102,27 @@ pub fn print_line(msg: String, line: u16) -> Result<(), io::Error> {
 }
 
 
-pub fn update_view_screen(content: &str, file_path: &str) -> Result<(), io::Error> {
-    update_screen(content, file_path)?;
+pub fn update_view_screen(content: &str, task_list: &TaskList) -> Result<(), io::Error> {
+    update_screen(content, task_list)?;
     display_view_mode()?;
     Ok(())
 }
 
 
-pub fn update_command_screen(content: &str, input_buffer: &String, file_path: &str) -> Result<(), io::Error> {
-    update_screen(content, file_path)?;
+pub fn update_command_screen(content: &str, input_buffer: &String, task_list: &TaskList) -> Result<(), io::Error> {
+    update_screen(content, task_list)?;
     display_command_mode(input_buffer)?;
     Ok(())
 }
 
 
-pub fn update_screen(content: &str, file_path: &str) -> Result<(), io::Error> {
+pub fn update_screen(content: &str, task_list: &TaskList) -> Result<(), io::Error> {
     clear_all()?;
     match content {
         "help" => display_help()?,
         "task" => {
-            // let file_path = "tasks.csv";
-            let task_list = TaskList::load_tasks_from_csv(file_path)
-                .expect("Failed to load tasks from file");
             display_tasks(&task_list);
-            task_list.save_tasks_to_csv(file_path)
+            task_list.save_tasks_to_csv()
                 .expect("Failed to save tasks to the file");
         },
         _ => {}

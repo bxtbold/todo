@@ -5,14 +5,15 @@ use std::{
 };
 use crossterm::terminal;
 
-pub struct Environment<'a> {
-    file_path: &'a str,
+#[derive(Debug)]
+pub struct Environment {
+    file_path: String,
     prev_terminal_size: (u16, u16),
     prev_modified_time: SystemTime,
 }
 
-impl Environment<'_> {
-    pub fn new(file_path: &str) -> Environment {
+impl Environment {
+    pub fn new(file_path: String) -> Environment {
         let mut prev_terminal_size = (0, 0);
         let mut prev_modified_time = SystemTime::now();
         Environment {
@@ -35,7 +36,7 @@ impl Environment<'_> {
     }
 
     pub fn update_modified_time(&mut self) {
-        let initial_metadata = fs::metadata(self.file_path)
+        let initial_metadata = fs::metadata(&self.file_path)
             .expect("Failed to retrieve file metadata!");
         self.prev_modified_time = initial_metadata.modified()
             .expect("Failed to read the current modified time!");
@@ -46,7 +47,7 @@ impl Environment<'_> {
     }
 
     pub fn is_file_modified(&self) -> bool {
-        let initial_metadata = fs::metadata(self.file_path)
+        let initial_metadata = fs::metadata(&self.file_path)
             .expect("Failed to retrieve file metadata!");
         let last_modified = initial_metadata.modified()
             .expect("Failed to read the current modified time!");

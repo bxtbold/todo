@@ -20,7 +20,7 @@ pub fn read(file_path: &str) -> Result<TaskList, csv::Error> {
         }
     }
 
-    Ok(TaskList::new("20240121".to_string(), tasks))
+    Ok(TaskList::new("20240121".to_string(), tasks, file_path.to_string()))
 }
 
 
@@ -66,6 +66,6 @@ pub fn file_exists(file_path: &str) -> bool {
 pub fn create_file(file_path: &str) {
     let file = std::fs::File::create(file_path)
         .expect("Failed to create file");
-    write(file_path, &TaskList::new(get_today_date(), Vec::new()))
+    write(file_path, &TaskList::new(get_today_date(), Vec::new(), String::new()))
         .expect("Failed to write to file");
 }

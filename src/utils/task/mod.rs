@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_task_list_creation() {
-        let task_list = TaskList::new("2024-04-19".to_string(), vec![]);
+        let task_list = TaskList::new("2024-04-19".to_string(), vec![], String::new());
         assert_eq!(task_list.get_date(), "2024-04-19");
         assert_eq!(task_list.get_tasks().len(), 0);
     }
