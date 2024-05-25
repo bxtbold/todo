@@ -106,6 +106,4 @@ mod tests {
         assert_eq!(task_list.get_tasks()[0].get_priority(), "high");
         assert_eq!(task_list.get_tasks()[1].get_priority(), "low");
     }
-
-    // You can add more test cases for other methods similarly
 }
