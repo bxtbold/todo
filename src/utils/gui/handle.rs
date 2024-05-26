@@ -53,7 +53,11 @@ pub fn handle_command_mode(task_list: &mut TaskList) -> Result<(), io::Error> {
             }
         }
 
-        if task_list.get_env_mut().should_update_view() {
+        if task_list.get_env_mut().is_file_modified() {
+            task_list.update_list_from_csv();
+            update_command_screen("task", &input_buffer, task_list)?;
+        }
+        if task_list.get_env_mut().is_terminal_resized() {
             update_command_screen("task", &input_buffer, task_list)?;
         }
 
@@ -87,11 +91,12 @@ fn update_and_handle_input(task_list: &mut TaskList, input_buffer: &mut String) 
             }
         }
 
-        if task_list.get_env_mut().should_update_view() {
-            let file_path = task_list.get_env().get_file_path();
-            update_command_screen("task", input_buffer, task_list)?;
-            task_list.get_env_mut().update_modified_time();
-            task_list.get_env_mut().update_terminal_size();
+        if task_list.get_env_mut().is_file_modified() {
+            task_list.update_list_from_csv();
+            update_command_screen("task", &input_buffer, task_list)?;
+        }
+        if task_list.get_env_mut().is_terminal_resized() {
+            update_command_screen("task", &input_buffer, task_list)?;
         }
 
         std::thread::sleep(Duration::from_millis(10));
@@ -102,11 +107,9 @@ fn update_and_handle_input(task_list: &mut TaskList, input_buffer: &mut String) 
 
 
 fn handle_enter_key(input_buffer: &mut String, task_list: &mut TaskList) -> Result<(), io::Error> {
-    let matches: Vec<&str> = input_buffer.split_whitespace().collect();
-    let cli = Cli::parse_gui(matches.clone());
-    match cli {
-        Ok(cli) => {cli.execute(task_list);}
-        Err(e) => {}
+    let cli = Cli::parse_input_buffer(&input_buffer).unwrap();
+    if cli.execute(task_list).is_ok() {
+        task_list.save_tasks_to_csv();
     }
     input_buffer.clear();
     clear_line()?;

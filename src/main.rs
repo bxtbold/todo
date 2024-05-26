@@ -21,10 +21,7 @@ fn main() {
     let cli = Cli::parse()
         .expect("Failed to parse command line arguments");
 
-    match cli.execute(&mut task_list) {
-       Ok(_) => {
-            task_list.save_tasks_to_csv();
-        },
-       Err(e) => (println!("{}", e)),
+    if cli.execute(&mut task_list).is_ok() {
+        task_list.save_tasks_to_csv();
     }
 }

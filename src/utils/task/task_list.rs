@@ -29,6 +29,11 @@ impl TaskList {
         }
     }
 
+    pub fn update_list_from_csv(&mut self) {
+        let task_list = TaskList::load_tasks_from_csv(self.get_env().get_file_path()).unwrap();
+        self.tasks = task_list.tasks;
+    }
+
     pub fn load_tasks_from_csv(file_path: &str) -> Result<TaskList, Box<dyn Error>> {
         match read(file_path) {
             Ok(task_list) => Ok(task_list),
