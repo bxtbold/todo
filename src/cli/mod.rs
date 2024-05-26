@@ -62,19 +62,14 @@ impl Cli {
         return Cli::match_subcommands(matches);
     }
 
-    pub fn parse_gui<'a>(match_vec: Vec<&str>) -> Result<Cli, &'a str> {
+    pub fn parse_input_buffer<'a>(input_buffer: &String) -> Result<Cli, &'a str>  {
+        let vec_matches: Vec<&str> = input_buffer.split_whitespace().collect();
 
         let result_matches = Cli::base_command()
-            .try_get_matches_from(match_vec);
+            .try_get_matches_from(vec_matches)
+            .unwrap();
 
-        let matches = match result_matches {
-            Ok(matches) => {
-                return Cli::match_subcommands(matches);
-            },
-            Err(_) => {
-                return Err("Invalid command");
-            }
-        };
+        Cli::match_subcommands(result_matches)
     }
 
     pub fn base_command<'a>() -> Command {

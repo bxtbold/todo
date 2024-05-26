@@ -41,6 +41,10 @@ fn gui_loop(task_list: &mut TaskList)-> Result<(), io::Error> {
             }
         }
 
+        if task_list.get_env_mut().is_file_modified() {
+            task_list.update_list_from_csv();
+        }
+
         std::thread::sleep(Duration::from_millis(50));
     }
 

@@ -46,29 +46,27 @@ impl Environment {
         self.prev_terminal_size = terminal::size().unwrap();
     }
 
-    pub fn is_file_modified(&self) -> bool {
+    pub fn is_file_modified(&mut self) -> bool {
         let initial_metadata = fs::metadata(&self.file_path)
             .expect("Failed to retrieve file metadata!");
         let last_modified = initial_metadata.modified()
             .expect("Failed to read the current modified time!");
 
-        self.prev_modified_time != last_modified
-    }
-
-    pub fn is_terminal_resized(&self) -> bool {
-        let current_size = terminal::size().unwrap();
-
-        self.prev_terminal_size != current_size
-    }
-
-    pub fn should_update_view(&mut self) -> bool {
-        let result = self.is_file_modified() || self.is_terminal_resized();
-
-        if result {
+        if self.prev_modified_time != last_modified {
             self.update_modified_time();
-            self.update_terminal_size();
+            return true;
         }
 
-        result
+        false
+    }
+
+    pub fn is_terminal_resized(&mut self) -> bool {
+        let current_size = terminal::size().unwrap();
+
+        if self.prev_terminal_size != current_size {
+            self.update_terminal_size();
+            return true;
+        }
+        false
     }
 }
