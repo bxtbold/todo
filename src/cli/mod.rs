@@ -423,16 +423,97 @@ mod tests {
     }
 
     #[test]
-    fn test_execute_done_command_with_id() {
+    fn test_execute_add_command_with_input_buffer() {
         let (_tmp_dir, tmp_file_path) = create_tmp_file();
+        let mut task_list = load_task_list_from_file(&tmp_file_path);
 
+        // test command
+        let input_buffer = String::from("todo add Study");
+        let cli = Cli::parse_input_buffer(&input_buffer).unwrap();
+        let result = cli.execute(&mut task_list);
+
+        // test results
+        assert!(result.is_ok());
+        assert_eq!(task_list.get_tasks().len(), 1);
+        assert_eq!(task_list.get_tasks().get(0).unwrap().get_name(), "Study");
+    }
+
+
+    #[test]
+    fn test_execute_rm_command_with_input_buffer() {
+        let (_tmp_dir, tmp_file_path) = create_tmp_file();
         let mut task_list = load_task_list_from_file(&tmp_file_path);
         task_list.add_task("Buy groceries", "mid", "2024-04-20");
         task_list.add_task("Study", "high", "2024-04-20");
         task_list.add_task("Do laundry", "low", "2024-04-20");
 
         // test command
-        let cli = create_cli("done", "", "", "", 1);
+        let input_buffer = String::from("todo rm Study");
+        let cli = Cli::parse_input_buffer(&input_buffer).unwrap();
+        let result = cli.execute(&mut task_list);
+
+        // test results
+        assert!(result.is_ok());
+        for task in task_list.get_tasks() {
+            assert_ne!(task.get_name(), "Study");
+        }
+    }
+
+    #[test]
+    fn test_execute_rm_command_using_index_with_input_buffer() {
+        let (_tmp_dir, tmp_file_path) = create_tmp_file();
+        let mut task_list = load_task_list_from_file(&tmp_file_path);
+        task_list.add_task("Buy groceries", "mid", "2024-04-20");
+        task_list.add_task("Study", "high", "2024-04-20");
+        task_list.add_task("Do laundry", "low", "2024-04-20");
+
+        // test command
+        let input_buffer = String::from("todo rm -i 1");
+        let cli = Cli::parse_input_buffer(&input_buffer).unwrap();
+        let result = cli.execute(&mut task_list);
+
+        // test results
+        assert!(result.is_ok());
+        for task in task_list.get_tasks() {
+            assert_ne!(task.get_name(), "Study");
+        }
+    }
+
+    #[test]
+    fn test_execute_done_command_with_input_buffer() {
+        let (_tmp_dir, tmp_file_path) = create_tmp_file();
+        let mut task_list = load_task_list_from_file(&tmp_file_path);
+        task_list.add_task("Buy groceries", "mid", "2024-04-20");
+        task_list.add_task("Study", "high", "2024-04-20");
+        task_list.add_task("Do laundry", "low", "2024-04-20");
+
+        // test command
+        let input_buffer = String::from("todo done Study");
+        let cli = Cli::parse_input_buffer(&input_buffer).unwrap();
+        let result = cli.execute(&mut task_list);
+
+        // test results
+        assert!(result.is_ok());
+        for task in task_list.get_tasks() {
+            if task.get_name() == "Study" {
+                assert!(task.get_done());
+            } else {
+                assert!(!task.get_done());
+            }
+        }
+    }
+
+    #[test]
+    fn test_execute_done_command_using_index_with_input_buffer() {
+        let (_tmp_dir, tmp_file_path) = create_tmp_file();
+        let mut task_list = load_task_list_from_file(&tmp_file_path);
+        task_list.add_task("Buy groceries", "mid", "2024-04-20");
+        task_list.add_task("Study", "high", "2024-04-20");
+        task_list.add_task("Do laundry", "low", "2024-04-20");
+
+        // test command
+        let input_buffer = String::from("todo done -i 1");
+        let cli = Cli::parse_input_buffer(&input_buffer).unwrap();
         let result = cli.execute(&mut task_list);
 
         // test results
