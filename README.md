@@ -24,6 +24,9 @@ This will update rust, clone the repository, build the todo tool, and enable the
 
 ## Usage
 
+![todo-gui](assets/gui.gif)
+
+
 ```
 Usage: todo <COMMAND> [TASK_NAME] [OPTIONS]
 
